@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Film Finder</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+
+    <string name="all_movies">All Movies</string>
+    <string name="recommended_movies">Recommended Movies</string>
+    <string name="popularity">Popularity</string>
+    <string name="rating">Rating</string>
+
+    <string name="action_filter">Filter</string>
+    <string name="action_search">Search</string>
+    <string name="action_settings">Settings</string>
+    <string name="like_button">Like</string>
+    <string name="dislike_button">Dislike</string>
+    <string name="save_button">Save</string>
+    <string name="skip_button">Skip</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
