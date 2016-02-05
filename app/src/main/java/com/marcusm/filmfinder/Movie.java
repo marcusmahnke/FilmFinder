@@ -29,17 +29,17 @@ public class Movie implements Parcelable{
     public static String TITLE = "title";
 
     String[] castArray;
-    String id, IMDBid, title, year, imageURL, thumbURL, backdropURL, synopsis, rating, consensus;
+    String id, IMDBid, title, year, posterURL, thumbURL, backdropURL, synopsis, rating, consensus;
     int criticScore, audienceScore, runtime;
     enum API {
         RT, TMDB
     }
 
-    Movie(String id, String IMDBid, String title, String year, String imageURL, String backdropURL,
+    Movie(String id, String IMDBid, String title, String year, String posterURL, String backdropURL,
           String thumbURL, String synopsis, int criticScore, int audienceScore,
           String rating, int runtime, String[] cast, String consensus){
 
-        initMovie(id, IMDBid, title, year, imageURL, backdropURL, thumbURL, synopsis,
+        initMovie(id, IMDBid, title, year, posterURL, backdropURL, thumbURL, synopsis,
                 criticScore, audienceScore, rating, runtime, cast, consensus);
     }
 
@@ -51,7 +51,8 @@ public class Movie implements Parcelable{
         try {
             id = obj.getString("id");
             title = obj.getString("title");
-            imageURL = "https://image.tmdb.org/t/p/w780" + Uri.decode(obj.getString("poster_path"));
+            String imageURL = Uri.decode(obj.getString("poster_path"));
+            posterURL = "https://image.tmdb.org/t/p/w780" + imageURL;
             thumbURL = "https://image.tmdb.org/t/p/w92" + imageURL;
             year = obj.getString("release_date").substring(0, 4);
 
@@ -81,7 +82,7 @@ public class Movie implements Parcelable{
         this.id = id;
         this.title = title;
         this.year = year;
-        this.imageURL = imageURL;
+        this.posterURL = imageURL;
         this.thumbURL = thumbURL;
         this.synopsis = synopsis;
         this.audienceScore = audienceScore;
@@ -244,12 +245,12 @@ public class Movie implements Parcelable{
         this.title = title;
     }
 
-    public String getImageURL() {
-        return imageURL;
+    public String getPosterURL() {
+        return posterURL;
     }
 
-    public void setImageURL(String imageURL) {
-        this.imageURL = imageURL;
+    public void setPosterURL(String posterURL) {
+        this.posterURL = posterURL;
     }
 
     public String getThumbURL() {
@@ -279,7 +280,7 @@ public class Movie implements Parcelable{
         dest.writeString(id);
         dest.writeString(title);
         dest.writeString(year);
-        dest.writeString(imageURL);
+        dest.writeString(posterURL);
         dest.writeString(thumbURL);
         dest.writeString(synopsis);
         dest.writeInt(audienceScore);
