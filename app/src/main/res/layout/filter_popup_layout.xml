@@ -25,24 +25,34 @@
 
     </RadioGroup>
 
-    <TextView
+   <CheckBox
+       android:id="@+id/genre_checkbox"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:checked="false"
+       android:text="Genre"/>
+
+    <Spinner
+        android:id="@+id/genre_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:spinnerMode="dialog"></Spinner>
+
+    <CheckBox
+        android:id="@+id/year_checkbox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Sort By"/>
-    <RadioGroup
+        android:checked="false"
+        android:text="Year"/>
+
+    <NumberPicker
+        android:id="@+id/year_picker"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-        <RadioButton
-            android:id="@+id/radio_popularity"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/popularity" />
-        <RadioButton
-            android:id="@+id/radio_rating"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/rating" />
+        android:layout_height="wrap_content"></NumberPicker>
 
-    </RadioGroup>
-
+    <Button
+        android:id="@+id/apply_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Apply"/>
 </LinearLayout>
