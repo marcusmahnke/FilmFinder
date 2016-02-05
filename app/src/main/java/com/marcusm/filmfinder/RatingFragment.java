@@ -1,16 +1,13 @@
 package com.marcusm.filmfinder;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
-import android.mtp.MtpConstants;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.provider.MediaStore;
 import android.support.v4.view.MenuItemCompat;
 import android.util.Log;
 import android.view.Gravity;
@@ -37,7 +34,6 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
@@ -51,40 +47,22 @@ import java.util.ArrayList;
  * create an instance of this fragment.
  */
 public class RatingFragment extends Fragment implements SearchView.OnQueryTextListener, View.OnClickListener, AdapterView.OnItemSelectedListener {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
     private static final int NUM_SIMILAR_MOVIES = 5;
-    private static final String API_KEY = "apikey=nukgabadpcrm73c8qa68zksc";
-    private static final String TMDB_API_KEY = "api_key=1b482df935405b1a9df063071c476c4f";
-    private static final String TMDB_SEARCH_REQ = "https://api.themoviedb.org/3/search/movie?query=";
-    private static final String TMDB_RESULTS_ARRAY = "results";
-    private static final String RT_RESULTS_ARRAY = "movies";
+
+    private static final String TMDB_ROOT_URL = "https://api.themoviedb.org/3/";
+    private static final String API_KEY = "api_key=1b482df935405b1a9df063071c476c4f";
+    private static final String SEARCH_REQ = "search/movie?query=";
+    private static final String RESULTS_ARRAY = "results";
+    private static final String MOVIE_LOOKUP = "movie/";
+    private static final String SIMILAR_LOOKUP = "/similar?";
+    private static final String GENRE_FILTER = "with_genres=";
+    private static final String YEAR_FILTER = "primary_release_year=";
     private static final String PAGE = "page=";
-    private static final String TMDB_POPULAR_MOVIES = "https://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc";
-    private static final String TMDB_RATED_MOVIES = "https://api.themoviedb.org/3/discover/movie?sort_by=vote_average.desc";
-    private static final String SEARCH_REQ = "http://api.rottentomatoes.com/api/public/v1.0/movies.json?q=";
-    private static final String SIMILAR_REQ1 = "http://api.rottentomatoes.com/api/public/v1.0/movies/";
-    private static final String SIMILAR_REQ2 = "/similar.json?";
-
-
-    private static final int GENRE_IDS[] = {0, 28, 16, 35, 99, 18, 10751, 27, 10749, 53};
+    private static final String POPULAR_MOVIES_REQ = "discover/movie?sort_by=popularity.desc";
+    private static final String AMPERSAND = "&";
+    private static final int GENRE_IDS[] = {28, 16, 35, 99, 18, 10751, 27, 10749, 53};
 
     private String[] genreLabels;
-
-    public static String CRITICS_SCORE = "critics_score";
-    public static String CRITICS_CONSENSUS = "critics_consensus";
-    public static String AUDIENCE_SCORE = "audience_score";
-    public static String RATINGS = "ratings";
-    public static String CAST = "abridged_cast";
-    public static String ACTOR_NAME = "name";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
     MyDB db;
     ImageView movieImageView;
     TextView titleView, filterView;
@@ -103,8 +81,7 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        int genreIDs[] = {28, 16, 35, 99, 18, 10751, 27, 10749, 53};
-        genreFilter = genreIDs[position];
+        genreFilter = GENRE_IDS[position];
         genreLabel = genreLabels[position];
         genreIndex = position;
         if (genreFilter > 0) {
@@ -117,27 +94,8 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
 
     }
 
-    String getGenreLabelFromID(int id){
-        switch (id) {
-            case 28:
-                return "Action";
-            case 16:
-                return "Animation";
-            case 35:
-                return "Comedy";
-            case 99:
-            case 18:
-            case 10751:
-            case 27:
-            case 10749:
-            case 53:
-            default:
-                return "Error";
-        }
-    }
-
     enum Mode {
-        ALL, RECOMMENDED, YEAR
+        ALL, RECOMMENDED
     }
 
     public RatingFragment() {
@@ -156,8 +114,8 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
     public static RatingFragment newInstance(String param1, String param2) {
         RatingFragment fragment = new RatingFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        //args.putString(ARG_PARAM1, param1);
+        //args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -166,8 +124,8 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            //mParam1 = getArguments().getString(ARG_PARAM1);
+           // mParam2 = getArguments().getString(ARG_PARAM2);
         }
         setHasOptionsMenu(true);
         movieList = new ArrayList<Movie>();
@@ -188,12 +146,6 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
         filterView = (TextView) rootView.findViewById(R.id.filter);
         filterView.setOnClickListener(this);
 
-        if (mode == Mode.ALL) {
-            filterView.setText("Showing: All Movies by Popularity");
-        } else {
-            filterView.setText("Showing: Movies Recommended for You");
-        }
-
         Button likeButton = (Button) rootView.findViewById(R.id.like_button);
         likeButton.setOnClickListener(this);
         Button dislikeButton = (Button) rootView.findViewById(R.id.dislike_button);
@@ -203,7 +155,7 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
         Button saveButton = (Button) rootView.findViewById(R.id.save_button);
         saveButton.setOnClickListener(this);
 
-        if (findPopularMovies()) {
+        if (findMovies()) {
             changeMovie();
         }
 
@@ -221,11 +173,10 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
 
             @Override
             public boolean onQueryTextSubmit(String query) {
-                findMovie(query);
+                findMovies(query);
                 System.out.println(currentMovie.getImageURL());
                 System.out.println(currentMovie.getThumbURL());
                 changeMovie();
-                //movieImageView.setImageBitmap(loadImage(currentMovie.getImageURL()));
                 return false;
             }
 
@@ -234,16 +185,7 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
                 return false;
             }
         });
-        /*MenuItem filterItem = menu.findItem(R.id.action_filter);
-        filterItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                //System.out.println("TEST");
-                showFilterPopup(titleView);
-                return false;
-            }
-        });
-        //MenuItemCompat.getActionView(filterItem);*/
+
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -284,22 +226,28 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
                 if (movieList.size() > 0) {
                     movieList.remove(0);
                 }
+
                 //update db
+                int liked = 0;
+                int seen = 0;
                 switch (id) {
                     case R.id.like_button:
                         findSimilarMovies();
-                        db.updateMovieRecord(currentMovie.getId(), 0, 1, 1);
+                        liked = 1;
+                        seen = 1;
                         break;
                     case R.id.dislike_button:
-                        db.updateMovieRecord(currentMovie.getId(), 0, 1, 0);
+                        seen = 1;
                         break;
                     case R.id.save_button:
-                        db.updateMovieRecord(currentMovie.getId(), 0, 0, 0);
                         break;
                     case R.id.skip_button:
-                        db.updateMovieRecord(currentMovie.getId(), 0, 2, 0);
+                        seen = 2;
                         break;
                 }
+
+                db.createMovieRecord(currentMovie.getId(), currentMovie.getTitle(), currentMovie.getYear(),
+                        currentMovie.getImageURL(), currentMovie.getThumbURL(), 0, seen, liked);
 
                 //add to seenmovielist
                 loggedMovies.add(currentMovie.getId());
@@ -311,75 +259,52 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
         }
     }
 
-    boolean findMovie(String searchQuery) {
-        JSONObject TMDBObject = WebRequest.APICall(TMDB_SEARCH_REQ + Uri.encode(searchQuery) + "&"
-                + TMDB_API_KEY);
+    boolean findMovies(String searchQuery) {
+        JSONObject TMDBObject = WebRequest.APICall(TMDB_ROOT_URL + SEARCH_REQ + Uri.encode(searchQuery) + AMPERSAND
+                + API_KEY);
 
         try {
-            JSONArray TMDBArray = TMDBObject.getJSONArray("results");
+            JSONArray TMDBArray = TMDBObject.getJSONArray(RESULTS_ARRAY);
             TMDBObject = TMDBArray.getJSONObject(0);
-
             currentMovie = new Movie(TMDBObject);
-            if (currentMovie == null) {
-                System.out.println(currentMovie.toString());
-                return false;
-            }
         } catch (JSONException e) {
             return false;
         }
         movieList.add(0, currentMovie);
-        db.createMovieRecord(currentMovie.getId(), currentMovie.getTitle(), currentMovie.getYear(),
-                currentMovie.getImageURL(), currentMovie.getThumbURL(), 0, 0, 0);
+
         return true;
     }
 
-    boolean findPopularMovies() {
-        String call;
-        int page;
-
-        String filterText = "Showing: ";
-        switch (mode) {
-            case ALL:
-                page = popularMoviesPage;
-                call = TMDB_POPULAR_MOVIES + "&" + PAGE + page;
-                break;
-            default:
-                page = popularMoviesPage;
-                call = TMDB_POPULAR_MOVIES + "&" + PAGE + page;
-                break;
-
-        }
+    boolean findMovies() {
+        String call = TMDB_ROOT_URL + POPULAR_MOVIES_REQ + AMPERSAND + PAGE + popularMoviesPage;
 
         String genreText = "All";
         if (filterByGenre) {
             System.out.println("Calling API with genre");
-            call += "&" + "with_genres=" + genreFilter;
+            call += AMPERSAND + GENRE_FILTER + genreFilter;
             genreText = genreLabel;
         }
+
         String yearText = "";
         if(filterByYear){
             System.out.println("Calling API with year");
-            call += "&" + "primary_release_year=" + yearFilter;
+            call += AMPERSAND + YEAR_FILTER + yearFilter;
             yearText = "From " + yearFilter;
         }
 
         filterView.setText("Showing: " + genreText + " Movies " + yearText);
 
-        call += "&" + TMDB_API_KEY;
+        call += AMPERSAND + API_KEY;
 
         System.out.println(call);
         JSONObject obj = WebRequest.APICall(call);
         try {
-            JSONArray arr = obj.getJSONArray("results");
+            JSONArray arr = obj.getJSONArray(RESULTS_ARRAY);
             for (int i = 0; i < arr.length(); i++) {
                 obj = arr.getJSONObject(i);
                 Movie movie = new Movie(obj);
-                if ((!loggedMovies.contains(movie.getId())) && (!movieList.contains(movie)) && movie != null) {
+                if ((!loggedMovies.contains(movie.getId())) && (!movieList.contains(movie))) {
                     movieList.add(movie);
-                    db.createMovieRecord(movie.getId(), movie.getTitle(), movie.getYear(),
-                            movie.getImageURL(), movie.getThumbURL(), 0, 0, 0);
-                } else if (movie == null) {
-                    Log.i("ERROR", "MOVIE NULL");
                 }
             }
         } catch (JSONException e) {
@@ -390,9 +315,9 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
     }
 
     boolean findSimilarMovies() {
-        JSONObject obj = WebRequest.APICall("https://api.themoviedb.org/3/movie/" + currentMovie.getId() + "/similar?" + TMDB_API_KEY);
+        JSONObject obj = WebRequest.APICall(TMDB_ROOT_URL + MOVIE_LOOKUP + currentMovie.getId() + SIMILAR_LOOKUP + API_KEY);
         try {
-            JSONArray arr = obj.getJSONArray("results");
+            JSONArray arr = obj.getJSONArray(RESULTS_ARRAY);
             int numMovies = arr.length();
             if (numMovies > NUM_SIMILAR_MOVIES) {
                 numMovies = NUM_SIMILAR_MOVIES;
@@ -400,14 +325,12 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
             for (int i = 0; i < numMovies; i++) {
                 obj = arr.getJSONObject(i);
                 Movie movie = new Movie(obj);
-                if ((!loggedMovies.contains(movie.getId())) && movie != null) {
+                if ((!loggedMovies.contains(movie.getId()))) {
                     db.createMovieRecord(movie.getId(), movie.getTitle(), movie.getYear(),
                             movie.getImageURL(), movie.getThumbURL(), 1, 0, 0);
                     if (mode == Mode.RECOMMENDED && (!movieList.contains(movie))) {
                         movieList.add(movie);
                     }
-                } else if (movie == null) {
-                    Log.i("ERROR", "MOVIE NULL");
                 }
             }
         } catch (JSONException e) {
@@ -421,33 +344,26 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
         if (movieList.size() > 0) {
             System.out.println("changing movie normally.");
             currentMovie = movieList.get(0);
-            Bitmap image = loadImage(currentMovie.getImageURL());
-            titleView.setText(currentMovie.getTitle() + " (" + currentMovie.getYear() + ")");
+            Bitmap image = ImageDownloader.loadImage(currentMovie.getImageURL());
+            String s = currentMovie.getTitle() + " (" + currentMovie.getYear() + ")";
+            titleView.setText(s);
             movieImageView.setImageBitmap(image);
         } else if (mode == Mode.ALL) {
             popularMoviesPage++;
-            if (findPopularMovies()) {
+            if (findMovies()) {
                 changeMovie();
             } else {
-                currentMovie = null;
-                movieImageView.setImageBitmap(null);
-                titleView.setText("Error. No Movies Found!");
+                clearMovie("Error. No Movies Found!");
             }
         } else {
-            currentMovie = null;
-            movieImageView.setImageBitmap(null);
-            titleView.setText("No Movies Found! Rate more movies for more recommendations!");
+            clearMovie("No Movies Found! Rate more movies for more recommendations!");
         }
     }
 
-    void changeMode(Mode mode) {
-        if (mode == Mode.ALL) {
-            filterView.setText("Showing: All Movies by Popularity");
-        } else {
-            filterView.setText("Showing: Movies Recommended for You");
-        }
-
-        this.mode = mode;
+    void clearMovie(String s){
+        currentMovie = null;
+        movieImageView.setImageBitmap(null);
+        titleView.setText(s);
     }
 
     void loadSeenMovies() {
@@ -470,14 +386,9 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
     }
 
     public void showFilterPopup(View anchorView) {
-
         final View popupView = getActivity().getLayoutInflater().inflate(R.layout.filter_popup_layout, null);
-
         final PopupWindow popupWindow = new PopupWindow(popupView,
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-
-        // Example: If you have a TextView inside `popup_layout.xml`
-        //TextView tv = (TextView) popupView.findViewById(R.id.tv);
 
         Button applyButton = (Button) popupView.findViewById(R.id.apply_button);
         applyButton.setOnClickListener(new View.OnClickListener() {
@@ -503,28 +414,23 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
         yearPicker.setMaxValue(2016);
         yearPicker.setValue(yearFilter);
 
-        final int previousYearFilter = yearFilter;
-        final int previousGenreFilter = genreFilter;
-
         final CheckBox genreCheckBox = (CheckBox) popupView.findViewById(R.id.genre_checkbox);
         final CheckBox yearCheckBox = (CheckBox) popupView.findViewById(R.id.year_checkbox);
 
-        final boolean previousFilterByGenre = filterByGenre;
-        final boolean previousFilterByYear = filterByYear;
-        if(filterByGenre){
-            genreCheckBox.setChecked(true);
-        }
-        if(filterByYear){
-            yearCheckBox.setChecked(true);
-        }
+        genreCheckBox.setChecked(filterByGenre);
+        yearCheckBox.setChecked(filterByYear);
 
-        //final int previousGenreFilter = genreFilter;
-        final Mode previousMode = mode;
         if (mode == Mode.ALL) {
             radioAll.setChecked(true);
         } else {
             radioRecommended.setChecked(true);
         }
+
+        final int previousYearFilter = yearFilter;
+        final int previousGenreFilter = genreFilter;
+        final boolean previousFilterByGenre = filterByGenre;
+        final boolean previousFilterByYear = filterByYear;
+        final Mode previousMode = mode;
 
         // If the PopupWindow should be focusable
         popupWindow.setFocusable(true);
@@ -552,11 +458,9 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
 
                 filterByGenre = genreCheckBox.isChecked();
                 filterByYear = yearCheckBox.isChecked();
-
                 yearFilter = yearPicker.getValue();
 
                 boolean genreOrYearChanged = (previousFilterByYear != yearCheckBox.isChecked() || previousFilterByGenre != genreCheckBox.isChecked());
-
                 genreOrYearChanged = genreOrYearChanged ||
                         (filterByGenre && previousGenreFilter != genreFilter) ||
                         (filterByYear && previousYearFilter != yearFilter);
@@ -572,44 +476,14 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
     void onFilterOptionsChanged() {
         System.out.println(mode);
         if (mode == Mode.ALL) {
-            changeMode(Mode.ALL);
             movieList.clear();
-            findPopularMovies();
+            findMovies();
             changeMovie();
         } else {
-            changeMode(Mode.RECOMMENDED);
             loadSimilarMovies();
+            filterView.setText("Showing: Movies Recommended for You");
             changeMovie();
         }
-    }
-
-
-    public void onRadioButtonClicked(View view) {
-        // Is the button now checked?
-        boolean checked = ((RadioButton) view).isChecked();
-
-        // Check which radio button was clicked
-        switch (view.getId()) {
-            case R.id.radio_all:
-                if (checked) {
-                    changeMode(Mode.ALL);
-                    movieList.clear();
-                    findPopularMovies();
-                    changeMovie();
-                }
-                break;
-            case R.id.radio_recommended:
-                if (checked) {
-                    changeMode(Mode.RECOMMENDED);
-                    loadSimilarMovies();
-                    changeMovie();
-                }
-                break;
-        }
-    }
-
-    void changeMovieList() {
-        loadSimilarMovies();
     }
 
     Movie getMovieFromCursor(Cursor c) {
@@ -622,17 +496,6 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
         return new Movie(c.getString(0), c.getString(1), c.getString(2), c.getString(3),
                 c.getString(4), c.getString(5), c.getString(6), c.getString(7), c.getInt(8),
                 c.getInt(9), c.getString(10), c.getInt(11), castArray, c.getString(13));
-    }
-
-    Bitmap loadImage(String imageurl) {
-        Bitmap image = null;
-        ImageDownloader id = new ImageDownloader(imageurl);
-        try {
-            image = id.execute().get();
-        } catch (Exception e) {
-        }
-
-        return image;
     }
 
     @Override
