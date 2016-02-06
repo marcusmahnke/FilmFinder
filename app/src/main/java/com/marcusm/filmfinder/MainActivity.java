@@ -104,10 +104,10 @@ public class MainActivity extends AppCompatActivity
             changeFragment(new RatingFragment());
 
         } else if (id == R.id.nav_gallery) {
-            changeFragment(new SeenMovieFragment());
+
 
         } else if (id == R.id.nav_slideshow) {
-
+            changeFragment(new SeenMovieFragment());
         } else if (id == R.id.nav_manage) {
 
         } else if (id == R.id.nav_share) {
