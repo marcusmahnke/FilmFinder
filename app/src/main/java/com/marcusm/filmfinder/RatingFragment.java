@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -174,7 +173,7 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
             @Override
             public boolean onQueryTextSubmit(String query) {
                 findMovies(query);
-                System.out.println(currentMovie.getImageURL());
+                System.out.println(currentMovie.getPosterURL());
                 System.out.println(currentMovie.getThumbURL());
                 changeMovie();
                 return false;
@@ -246,10 +245,20 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
                         break;
                 }
 
-                db.createMovieRecord(currentMovie.getId(), currentMovie.getTitle(), currentMovie.getYear(),
-                        currentMovie.getImageURL(), currentMovie.getThumbURL(), 0, seen, liked);
+                System.out.println(currentMovie.toString());
+                System.out.println(currentMovie.getPosterURL() + " " + currentMovie.getThumbURL());
+                if(loggedMovies.contains(currentMovie.getId())) {
+                    db.updateMovieRecord(currentMovie.getId(), 0, seen, liked);
+                    System.out.println(currentMovie.getId() + " " + currentMovie.getTitle() + " updated");
+                } else{
+                    System.out.println(db.createMovieRecord(currentMovie.getId(), currentMovie.getTitle(), currentMovie.getYear(),
+                            currentMovie.getPosterURL(), currentMovie.getThumbURL(), 0, seen, liked));
+                    System.out.println(currentMovie.getId() + " " + currentMovie.getTitle() + " created");
+
+                }
 
                 //add to seenmovielist
+                System.out.println(loggedMovies);
                 loggedMovies.add(currentMovie.getId());
                 changeMovie();
             } else {
@@ -327,7 +336,7 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
                 Movie movie = new Movie(obj);
                 if ((!loggedMovies.contains(movie.getId()))) {
                     db.createMovieRecord(movie.getId(), movie.getTitle(), movie.getYear(),
-                            movie.getImageURL(), movie.getThumbURL(), 1, 0, 0);
+                            movie.getPosterURL(), movie.getThumbURL(), 1, 0, 0);
                     if (mode == Mode.RECOMMENDED && (!movieList.contains(movie))) {
                         movieList.add(movie);
                     }
@@ -344,7 +353,7 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
         if (movieList.size() > 0) {
             System.out.println("changing movie normally.");
             currentMovie = movieList.get(0);
-            Bitmap image = ImageDownloader.loadImage(currentMovie.getImageURL());
+            Bitmap image = ImageDownloader.loadImage(currentMovie.getPosterURL());
             String s = currentMovie.getTitle() + " (" + currentMovie.getYear() + ")";
             titleView.setText(s);
             movieImageView.setImageBitmap(image);
