@@ -4,18 +4,11 @@ import android.app.ListFragment;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.marcusm.filmfinder.dummy.DummyContent;
 import com.marcusm.filmfinder.dummy.DummyContent.DummyItem;
-
-import java.util.List;
 
 /**
  * A fragment representing a list of Items.
@@ -23,29 +16,34 @@ import java.util.List;
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
-public class SeenMovieFragment extends ListFragment {
+public class MovieListFragment extends ListFragment {
 
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
+    private static final String HAS_SEEN = "has_seen";
     // TODO: Customize parameters
     private int mColumnCount = 1;
     OnListFragmentInteractionListener mListener;
 
     MyDB db;
+    boolean hasSeen;
 
+    public enum Mode {
+        SAVED, SEEN
+    }
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public SeenMovieFragment() {
+    public MovieListFragment() {
     }
 
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
-    public static SeenMovieFragment newInstance(int columnCount) {
-        SeenMovieFragment fragment = new SeenMovieFragment();
+    public static MovieListFragment newInstance(boolean hasSeen) {
+        MovieListFragment fragment = new MovieListFragment();
         Bundle args = new Bundle();
-        args.putInt(ARG_COLUMN_COUNT, columnCount);
+        args.putBoolean(HAS_SEEN, hasSeen);
         fragment.setArguments(args);
         return fragment;
     }
@@ -55,12 +53,10 @@ public class SeenMovieFragment extends ListFragment {
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
+            hasSeen = getArguments().getBoolean(HAS_SEEN);
         }
 
         db = new MyDB(this.getActivity());
-
-
     }
 
     @Override
@@ -81,7 +77,7 @@ public class SeenMovieFragment extends ListFragment {
             Cursor mCursor = db.selectMovieRecords(false, true, "title");
             recyclerView.setAdapter(new CustomCursorAdapter(this.getActivity(), mCursor, 0, false));
         }*/
-        Cursor mCursor = db.selectMovieRecords(false, true, "title");
+        Cursor mCursor = db.selectMovieRecords(false, hasSeen, "title");
         setListAdapter(new CustomCursorAdapter(this.getActivity(), mCursor, 0, false));
         return view;
     }
