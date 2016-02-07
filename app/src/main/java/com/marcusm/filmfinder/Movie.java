@@ -13,26 +13,30 @@ import org.json.JSONObject;
  * Created by Marcus on 1/15/2016.
  */
 public class Movie implements Parcelable{
-    public static String POSTERS = "posters";
-    public static String POSTER_DETAILED = "detailed";
-    public static String POSTER_THUMB = "thumbnail";
-    public static String RATINGS = "ratings";
-    public static String CRITICS_SCORE = "critics_score";
-    public static String CRITICS_CONSENSUS = "critics_consensus";
-    public static String AUDIENCE_SCORE = "audience_score";
-    public static String CAST = "abridged_cast";
-    public static String ACTOR_NAME = "name";
-    public static String RELEASE_YEAR = "year";
-    public static String SYNOPSIS = "synopsis";
-    public static String MPAA_RATING = "mpaa_rating";
-    public static String RUNTIME = "runtime";
-    public static String TITLE = "title";
+
+    private static final String RT_MOVIE_URL = "http://api.rottentomatoes.com/api/public/v1.0/movie_alias.json?apikey=##&type=imdb&id=";
+    private static final String RATINGS = "ratings";
+    private static final String CRITICS_SCORE = "critics_score";
+    private static final String CRITICS_CONSENSUS = "critics_consensus";
+    private static final String AUDIENCE_SCORE = "audience_score";
+    private static final String CAST = "abridged_cast";
+    private static final String ACTOR_NAME = "name";
+    private static final String SYNOPSIS = "synopsis";
+    private static final String MPAA_RATING = "mpaa_rating";
+    private static final String RUNTIME = "runtime";
+
+    private static final String TMDB_API_KEY = "api_key=##";
+    private static final String TMDB_MOVIE_URL = "https://api.themoviedb.org/3/movie/";
+    private static final String TMDB_BACKDROP_URL = "https://image.tmdb.org/t/p/w1280";
+    private static final String IMDB_ID = "imdb_id";
+    private static final String BACKDROP = "backdrop_path";
 
     String[] castArray;
     String id, IMDBid, title, year, posterURL, thumbURL, backdropURL, synopsis, rating, consensus;
     int criticScore, audienceScore, runtime;
-    enum API {
-        RT, TMDB
+
+    Movie(){
+        initMovie("","","","","","","","", -1, -1, "", -1, null, "");
     }
 
     Movie(String id, String IMDBid, String title, String year, String posterURL, String backdropURL,
@@ -41,10 +45,6 @@ public class Movie implements Parcelable{
 
         initMovie(id, IMDBid, title, year, posterURL, backdropURL, thumbURL, synopsis,
                 criticScore, audienceScore, rating, runtime, cast, consensus);
-    }
-
-    Movie(){
-        initMovie("","","","","","","","", -1, -1, "", -1, null, "");
     }
 
     Movie(JSONObject obj) {
@@ -76,13 +76,15 @@ public class Movie implements Parcelable{
                 cast, in.readString());
     }
 
-    void initMovie(String id, String IMDBid, String title, String year, String imageURL, String backdropURL, String thumbURL,
+    void initMovie(String id, String IMDBid, String title, String year, String posterURL, String backdropURL, String thumbURL,
                    String synopsis, int criticScore, int audienceScore,
                    String rating, int runtime, String[] cast, String consensus){
         this.id = id;
+        this.IMDBid = IMDBid;
         this.title = title;
         this.year = year;
-        this.posterURL = imageURL;
+        this.posterURL = posterURL;
+        this.backdropURL = backdropURL;
         this.thumbURL = thumbURL;
         this.synopsis = synopsis;
         this.audienceScore = audienceScore;
@@ -113,44 +115,34 @@ public class Movie implements Parcelable{
     }
 
     public String getCastString() {
-        String c = "";
+        StringBuilder sb = new StringBuilder(120);
         if(castArray!=null){
             for(int i=0; i<castArray.length; i++){
-                c += castArray[i];
+                sb.append(castArray[i]);
                 if(i!=castArray.length-1)
-                    c+=",";
+                    sb.append(", ");
             }
         }
-        return c;
-    }
-
-    public String getCastStringFormatted() {
-        String c = "";
-        for(int i=0; i<castArray.length; i++){
-            c += castArray[i];
-            if(i!=castArray.length-1)
-                c+=", ";
-        }
-        return c;
+        return sb.toString();
     }
 
     void getMovieDetailsFromJSON() {
-        JSONObject TMDBObject = WebRequest.APICall("https://api.themoviedb.org/3/movie/" + this.id + "?api_key=1b482df935405b1a9df063071c476c4f");
+        JSONObject TMDBObject = WebRequest.APICall(TMDB_MOVIE_URL + this.id + "?" + TMDB_API_KEY);
         try{
-            IMDBid = TMDBObject.getString("imdb_id");
-            backdropURL = "https://image.tmdb.org/t/p/w1280" + Uri.decode(TMDBObject.getString("backdrop_path"));
+            IMDBid = TMDBObject.getString(IMDB_ID);
+            backdropURL = TMDB_BACKDROP_URL + Uri.decode(TMDBObject.getString(BACKDROP));
         } catch (JSONException e){
             Log.e("JSON ERROR", this.toString());
         }
 
-        JSONObject RTObject = WebRequest.APICall("http://api.rottentomatoes.com/api/public/v1.0/movie_alias.json?apikey=nukgabadpcrm73c8qa68zksc&type=imdb&id=" + IMDBid.substring(2));
+        JSONObject RTObject = WebRequest.APICall(RT_MOVIE_URL + IMDBid.substring(2));
         try {
             JSONObject scores = RTObject.getJSONObject(RATINGS);
             criticScore = scores.getInt(CRITICS_SCORE);
             audienceScore = scores.getInt(AUDIENCE_SCORE);
-            synopsis = RTObject.getString("synopsis");
-            rating = RTObject.getString("mpaa_rating");
-            runtime = RTObject.getInt("runtime");
+            synopsis = RTObject.getString(SYNOPSIS);
+            rating = RTObject.getString(MPAA_RATING);
+            runtime = RTObject.getInt(RUNTIME);
             consensus = RTObject.getString(CRITICS_CONSENSUS);
 
             JSONArray abridged_cast = RTObject.getJSONArray(CAST);
