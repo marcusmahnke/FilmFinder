@@ -17,10 +17,9 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             "imdb_id text," +
             "title text not null," +
             "year text not null," +
-            "image_url text not null," +
+            "poster_url text not null," +
             "backdrop_url text," +
             "thumb_url text not null," +
-            //"image blob," +
             "synopsis text, " +
             "critics_score integer, " +
             "audience_score integer, " +

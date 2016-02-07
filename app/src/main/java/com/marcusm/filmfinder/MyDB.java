@@ -9,11 +9,27 @@ import android.database.sqlite.SQLiteDatabase;
  * Created by Marcus on 1/23/2016.
  */
 public class MyDB {
+    public final static String MOVIES_TABLE = "Movies";
+    public final static String MOVIE_ID = "_id";
+    public final static String IMDB_ID = "imdb_id";
+    public final static String MOVIE_TITLE = "title";
+    public final static String YEAR = "year";
+    public final static String POSTER_URL = "poster_url";
+    public final static String BACKDROP_URL = "backdrop_url";
+    public final static String THUMBNAIL_URL = "thumb_url";
+    public final static String SYNOPSIS = "synopsis";
+    public final static String CRITICS_SCORE = "critics_score";
+    public final static String AUDIENCE_SCORE = "audience_score";
+    public final static String MPAA_RATING = "rating";
+    public final static String RUNTIME = "runtime";
+    public final static String ACTORS = "actors";
+    public final static String CONSENSUS = "consensus";
+    public final static String SIMILAR = "similar";
+    public final static String SEEN = "seen";
+    public final static String LIKED = "liked";
+
     private DatabaseHelper dbHelper;
     private SQLiteDatabase db;
-
-    public final static String MOVIE_ID = "_id";
-    public final static String MOVIE_TITLE = "title";
 
     public MyDB(Context context){
         dbHelper = new DatabaseHelper(context);
@@ -25,24 +41,23 @@ public class MyDB {
                                   String rating, int runtime, String cast, String consensus, int similar, int seen, int liked){
         ContentValues values = new ContentValues();
         values.put(MOVIE_ID, id);
-        values.put("imdb_id", IMDBid);
+        values.put(IMDB_ID, IMDBid);
         values.put(MOVIE_TITLE, title);
-        values.put("year", year);
-        //values.put("image", image);
-        values.put("image_url", imageURL);
-        values.put("backdrop_url", backdropURL);
-        values.put("thumb_url", thumbURL);
-        values.put("synopsis", synopsis);
-        values.put("critics_score", criticScore);
-        values.put("audience_score", audienceScore);
-        values.put("rating", rating);
-        values.put("runtime", runtime);
-        values.put("actors", cast);
-        values.put("consensus", consensus);
-        values.put("similar", similar);
-        values.put("seen", seen);
-        values.put("liked", liked);
-        return db.insertWithOnConflict("Movies", null, values, SQLiteDatabase.CONFLICT_IGNORE);
+        values.put(YEAR, year);
+        values.put(POSTER_URL, imageURL);
+        values.put(BACKDROP_URL, backdropURL);
+        values.put(THUMBNAIL_URL, thumbURL);
+        values.put(SYNOPSIS, synopsis);
+        values.put(CRITICS_SCORE, criticScore);
+        values.put(AUDIENCE_SCORE, audienceScore);
+        values.put(MPAA_RATING, rating);
+        values.put(RUNTIME, runtime);
+        values.put(ACTORS, cast);
+        values.put(CONSENSUS, consensus);
+        values.put(SIMILAR, similar);
+        values.put(SEEN, seen);
+        values.put(LIKED, liked);
+        return db.insertWithOnConflict(MOVIES_TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE);
     }
 
     public long createMovieRecord(String id, String title, String year, String imageURL,
@@ -50,28 +65,28 @@ public class MyDB {
         ContentValues values = new ContentValues();
         values.put(MOVIE_ID, id);
         values.put(MOVIE_TITLE, title);
-        values.put("year", year);
-        values.put("image_url", imageURL);
-        values.put("thumb_url", thumbURL);
-        values.put("similar", similar);
-        values.put("seen", seen);
-        values.put("liked", liked);
-        return db.insertWithOnConflict("Movies", null, values, SQLiteDatabase.CONFLICT_IGNORE);
+        values.put(YEAR, year);
+        values.put(POSTER_URL, imageURL);
+        values.put(THUMBNAIL_URL, thumbURL);
+        values.put(SIMILAR, similar);
+        values.put(SEEN, seen);
+        values.put(LIKED, liked);
+        return db.insertWithOnConflict(MOVIES_TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE);
     }
 
     public Cursor selectMovieRecords(boolean similar, boolean seen, String orderBy){
         String selection;
         if(similar)
-            selection = "similar = 1";
+            selection = SIMILAR + " = 1";
         else if(seen)
-            selection = "seen = 1";
+            selection = SEEN + " = 1";
         else
-            selection = "seen = 0 and similar = 0";
+            selection = SEEN + " = 0 and " + SIMILAR + " = 0";
 
-        String[] cols = new String[] {MOVIE_ID, "imdb_id", MOVIE_TITLE, "year", "image_url", "backdrop_url", "thumb_url",
-                "synopsis", "critics_score", "audience_score", "rating", "runtime", "actors", "consensus", "liked"};
+        String[] cols = new String[] {MOVIE_ID, IMDB_ID, MOVIE_TITLE, YEAR, POSTER_URL, BACKDROP_URL, THUMBNAIL_URL,
+                SYNOPSIS, CRITICS_SCORE, AUDIENCE_SCORE, MPAA_RATING, RUNTIME, ACTORS, CONSENSUS, LIKED};
 
-        Cursor mCursor = db.query(true, "Movies", cols, selection, null, null, null, orderBy, null);
+        Cursor mCursor = db.query(true, MOVIES_TABLE, cols, selection, null, null, null, orderBy, null);
         if (mCursor != null){
             mCursor.moveToFirst();
         }
@@ -80,7 +95,7 @@ public class MyDB {
     }
 
     public boolean isMovieRecorded(String id){
-        String query = "Select _id from Movies where _id = " + id;
+        String query = "Select " + MOVIE_ID + " from " + MOVIES_TABLE + " where " + MOVIE_ID + " = " + id;
         Cursor cursor = db.rawQuery(query, null);
         if(cursor.getCount() <= 0){
             cursor.close();
@@ -92,18 +107,9 @@ public class MyDB {
 
     public long updateMovieRecord(String id, int similar, int seen, int liked){
         ContentValues values = new ContentValues();
-        values.put("seen", seen);
-        values.put("similar", similar);
-        values.put("liked", liked);
-        return db.updateWithOnConflict("Movies", values, "_id ='" + id +"'", null, SQLiteDatabase.CONFLICT_IGNORE);
-    }
-
-    public long updateMovieRecord(String id, int similar, int seen, int liked, byte[] image){
-        ContentValues values = new ContentValues();
-        values.put("seen", seen);
-        values.put("similar", similar);
-        values.put("liked", liked);
-        //values.put("image", image);
-        return db.updateWithOnConflict("Movies", values, "_id ='" + id +"'", null, SQLiteDatabase.CONFLICT_IGNORE);
+        values.put(SEEN, seen);
+        values.put(SIMILAR, similar);
+        values.put(LIKED, liked);
+        return db.updateWithOnConflict(MOVIES_TABLE, values, MOVIE_ID + " ='" + id +"'", null, SQLiteDatabase.CONFLICT_IGNORE);
     }
 }
