@@ -27,8 +27,14 @@ public class Movie implements Parcelable{
 
     private static final String TMDB_API_KEY = "api_key=##";
     private static final String TMDB_MOVIE_URL = "https://api.themoviedb.org/3/movie/";
+    private static final String TMDB_POSTER_URL = "https://image.tmdb.org/t/p/w780";
     private static final String TMDB_BACKDROP_URL = "https://image.tmdb.org/t/p/w1280";
+    private static final String TMDB_THUMBNAIL_URL = "https://image.tmdb.org/t/p/w92";
+    private static final String MOVIE_ID = "id";
     private static final String IMDB_ID = "imdb_id";
+    private static final String TITLE = "title";
+    private static final String POSTER = "poster_path";
+    private static final String RELEASE_DATE = "release_date";
     private static final String BACKDROP = "backdrop_path";
 
     String[] castArray;
@@ -49,12 +55,12 @@ public class Movie implements Parcelable{
 
     Movie(JSONObject obj) {
         try {
-            id = obj.getString("id");
-            title = obj.getString("title");
-            String imageURL = Uri.decode(obj.getString("poster_path"));
-            posterURL = "https://image.tmdb.org/t/p/w780" + imageURL;
-            thumbURL = "https://image.tmdb.org/t/p/w92" + imageURL;
-            year = obj.getString("release_date").substring(0, 4);
+            id = obj.getString(MOVIE_ID);
+            title = obj.getString(TITLE);
+            String imageURL = Uri.decode(obj.getString(POSTER));
+            posterURL = TMDB_POSTER_URL + imageURL;
+            thumbURL = TMDB_THUMBNAIL_URL + imageURL;
+            year = obj.getString(RELEASE_DATE).substring(0, 4);
 
         } catch (JSONException e) {
             Log.e("JSON ERROR", this.toString());
