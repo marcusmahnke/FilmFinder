@@ -79,6 +79,17 @@ public class MyDB {
         return mCursor;
     }
 
+    public boolean isMovieRecorded(String id){
+        String query = "Select _id from Movies where _id = " + id;
+        Cursor cursor = db.rawQuery(query, null);
+        if(cursor.getCount() <= 0){
+            cursor.close();
+            return false;
+        }
+        cursor.close();
+        return true;
+    }
+
     public long updateMovieRecord(String id, int similar, int seen, int liked){
         ContentValues values = new ContentValues();
         values.put("seen", seen);

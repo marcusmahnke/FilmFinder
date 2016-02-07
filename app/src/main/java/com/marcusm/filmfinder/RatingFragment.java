@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -66,7 +67,6 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
     ImageView movieImageView;
     TextView titleView, filterView;
     ArrayList<Movie> movieList;
-    ArrayList<String> loggedMovies;
     Movie currentMovie;
     int popularMoviesPage = 1;
     Mode mode = Mode.ALL;
@@ -128,9 +128,7 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
         }
         setHasOptionsMenu(true);
         movieList = new ArrayList<Movie>();
-        loggedMovies = new ArrayList<String>();
         db = new MyDB(this.getActivity());
-        loadSeenMovies();
         genreLabels = getActivity().getResources().getStringArray(R.array.genre_array);
 
     }
@@ -245,21 +243,14 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
                         break;
                 }
 
-                System.out.println(currentMovie.toString());
-                System.out.println(currentMovie.getPosterURL() + " " + currentMovie.getThumbURL());
-                if(loggedMovies.contains(currentMovie.getId())) {
+                if(db.isMovieRecorded(currentMovie.getId())) {
                     db.updateMovieRecord(currentMovie.getId(), 0, seen, liked);
-                    System.out.println(currentMovie.getId() + " " + currentMovie.getTitle() + " updated");
                 } else{
-                    System.out.println(db.createMovieRecord(currentMovie.getId(), currentMovie.getTitle(), currentMovie.getYear(),
-                            currentMovie.getPosterURL(), currentMovie.getThumbURL(), 0, seen, liked));
-                    System.out.println(currentMovie.getId() + " " + currentMovie.getTitle() + " created");
-
+                    if(db.createMovieRecord(currentMovie.getId(), currentMovie.getTitle(), currentMovie.getYear(),
+                            currentMovie.getPosterURL(), currentMovie.getThumbURL(), 0, seen, liked) == -1){
+                        Log.e("SQLite Insert Error", "Error rating movie");
+                    };
                 }
-
-                //add to seenmovielist
-                System.out.println(loggedMovies);
-                loggedMovies.add(currentMovie.getId());
                 changeMovie();
             } else {
                 Toast toast = Toast.makeText(this.getActivity().getApplicationContext(), "No movie to rate!", Toast.LENGTH_SHORT);
@@ -312,7 +303,7 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
             for (int i = 0; i < arr.length(); i++) {
                 obj = arr.getJSONObject(i);
                 Movie movie = new Movie(obj);
-                if ((!loggedMovies.contains(movie.getId())) && (!movieList.contains(movie))) {
+                if ((!db.isMovieRecorded(movie.getId())) && (!movieList.contains(movie))) {
                     movieList.add(movie);
                 }
             }
@@ -331,15 +322,20 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
             if (numMovies > NUM_SIMILAR_MOVIES) {
                 numMovies = NUM_SIMILAR_MOVIES;
             }
+            System.out.println("Similar Movies: ");
             for (int i = 0; i < numMovies; i++) {
                 obj = arr.getJSONObject(i);
                 Movie movie = new Movie(obj);
-                if ((!loggedMovies.contains(movie.getId()))) {
+
+                System.out.println(movie.toString());
+                if ((!db.isMovieRecorded(movie.getId()))) {
                     db.createMovieRecord(movie.getId(), movie.getTitle(), movie.getYear(),
                             movie.getPosterURL(), movie.getThumbURL(), 1, 0, 0);
                     if (mode == Mode.RECOMMENDED && (!movieList.contains(movie))) {
                         movieList.add(movie);
                     }
+                } else {
+                    //update similar field
                 }
             }
         } catch (JSONException e) {
@@ -373,15 +369,6 @@ public class RatingFragment extends Fragment implements SearchView.OnQueryTextLi
         currentMovie = null;
         movieImageView.setImageBitmap(null);
         titleView.setText(s);
-    }
-
-    void loadSeenMovies() {
-        Cursor mCursor = db.selectMovieRecords(false, true, null);
-        for (int i = 0; i < mCursor.getCount(); i++) {
-            loggedMovies.add(mCursor.getString(0));
-            mCursor.moveToNext();
-        }
-        mCursor.close();
     }
 
     void loadSimilarMovies() {
