@@ -5,26 +5,6 @@
     android:background="@color/white"
     android:orientation="vertical">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Show"/>
-    <RadioGroup
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-        <RadioButton
-            android:id="@+id/radio_all"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/all_movies" />
-        <RadioButton
-            android:id="@+id/radio_recommended"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/recommended_movies" />
-
-    </RadioGroup>
-
    <CheckBox
        android:id="@+id/genre_checkbox"
        android:layout_width="wrap_content"

@@ -91,15 +91,13 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {
-            // Create new fragment and transaction
-            changeFragment(new RatingFragment());
-
+            changeFragment(RatingFragment.newInstance(false));
         } else if (id == R.id.nav_gallery) {
-            changeFragment(MovieListFragment.newInstance(false));
+            changeFragment(RatingFragment.newInstance(true));
         } else if (id == R.id.nav_slideshow) {
-            changeFragment(MovieListFragment.newInstance(true));
+            changeFragment(MovieListFragment.newInstance(false));
         } else if (id == R.id.nav_manage) {
-
+            changeFragment(MovieListFragment.newInstance(true));
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_send) {

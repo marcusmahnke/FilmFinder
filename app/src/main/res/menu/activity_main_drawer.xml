@@ -9,15 +9,15 @@
         <item
             android:id="@+id/nav_gallery"
             android:icon="@drawable/ic_menu_gallery"
-            android:title="My Watch List" />
+            android:title="Movies Recommended for You" />
         <item
             android:id="@+id/nav_slideshow"
             android:icon="@drawable/ic_menu_slideshow"
-            android:title="My Liked Movies" />
+            android:title="Your Watch List" />
         <item
             android:id="@+id/nav_manage"
             android:icon="@drawable/ic_menu_manage"
-            android:title="Tools" />
+            android:title="Your Liked Movies" />
     </group>
 
     <item android:title="Communicate">
