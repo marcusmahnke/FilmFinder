@@ -1,5 +1,6 @@
 package com.marcusm.filmfinder;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -62,6 +63,7 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
 
     private static final String RECOMMENDED = "recommended";
 
+    private static final int MOVIE_ACTIVITY_RESULT = 1;
     MyDB db;
     ImageView movieImageView;
     TextView titleView, filterView;
@@ -184,19 +186,21 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
     }
 
     @Override
+    public void onPause(){
+
+    }
+
+    @Override
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.movie_image && currentMovie != null) {
             Intent myIntent = new Intent(getActivity(), MovieActivity.class);
             myIntent.putExtra("movie", currentMovie);
-            getActivity().startActivity(myIntent);
+            startActivityForResult(myIntent, MOVIE_ACTIVITY_RESULT);
         } else if (id == R.id.filter) {
             showFilterPopup(filterView);
         } else {
             if (currentMovie != null) {
-                if (movieList.size() > 0) {
-                    movieList.remove(0);
-                }
 
                 //update db
                 int liked = 0;
@@ -251,7 +255,7 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
     }
 
     boolean findMovies() {
-        StringBuilder call = new StringBuilder(100);
+        StringBuilder call = new StringBuilder();
         call.append(TMDB_ROOT_URL + POPULAR_MOVIES_REQ + AMPERSAND + PAGE + moviesPage);
 
         String genreText = "All";
@@ -316,6 +320,7 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
 
     void changeMovie() {
         if (movieList.size() > 0) {
+            movieList.remove(0);
             currentMovie = movieList.get(0);
             Bitmap image = ImageDownloader.loadImage(currentMovie.getPosterURL());
             String s = currentMovie.getTitle() + " (" + currentMovie.getYear() + ")";
@@ -446,6 +451,33 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
         return new Movie(c.getString(0), c.getString(1), c.getString(2), c.getString(3),
                 c.getString(4), c.getString(5), c.getString(6), c.getString(7), c.getInt(8),
                 c.getInt(9), c.getString(10), c.getInt(11), castArray, c.getString(13));
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        boolean hasChanged = false;
+        int liked = 0;
+        int seen = 0;
+        switch(requestCode) {
+            case (1) : {
+                if (resultCode == Activity.RESULT_OK) {
+                    seen = data.getIntExtra(MovieActivity.SEEN, 0);
+                    liked = data.getIntExtra(MovieActivity.LIKED, 0);
+                    hasChanged = data.getBooleanExtra(MovieActivity.CHANGED, false);
+                }
+                break;
+            }
+        }
+
+        if(hasChanged){
+            if(db.isMovieRecorded(currentMovie.getId())){
+                db.updateMovieRecord(currentMovie.getId(), 0, seen, liked);
+            } else{
+                db.createDetailedMovieRecord(currentMovie, 0, seen, liked);
+            }
+            changeMovie();
+        }
     }
 
     /**

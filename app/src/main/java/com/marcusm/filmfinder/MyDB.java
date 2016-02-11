@@ -74,6 +74,28 @@ public class MyDB {
         return db.insertWithOnConflict(MOVIES_TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE);
     }
 
+    public long createDetailedMovieRecord(Movie movie, int similar, int seen, int liked){
+        ContentValues values = new ContentValues();
+        values.put(MOVIE_ID, movie.getId());
+        values.put(IMDB_ID, movie.getIMDBid());
+        values.put(MOVIE_TITLE, movie.getTitle());
+        values.put(YEAR, movie.getYear());
+        values.put(POSTER_URL, movie.getPosterURL());
+        values.put(BACKDROP_URL, movie.getBackdropURL());
+        values.put(THUMBNAIL_URL, movie.getThumbURL());
+        values.put(SYNOPSIS, movie.getSynopsis());
+        values.put(CRITICS_SCORE, movie.getCriticScore());
+        values.put(AUDIENCE_SCORE, movie.getAudienceScore());
+        values.put(MPAA_RATING, movie.getRating());
+        values.put(RUNTIME, movie.getRuntime());
+        values.put(ACTORS, movie.getCastString());
+        values.put(CONSENSUS, movie.getConsensus());
+        values.put(SIMILAR, similar);
+        values.put(SEEN, seen);
+        values.put(LIKED, liked);
+        return db.insertWithOnConflict(MOVIES_TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+    }
+
     public Cursor selectMovieRecords(boolean similar, boolean seen, String orderBy){
         String selection;
         if(similar)
