@@ -136,6 +136,7 @@ public class Movie implements Parcelable{
         JSONObject TMDBObject = WebRequest.APICall(TMDB_MOVIE_URL + this.id + "?" + TMDB_API_KEY);
         try{
             IMDBid = TMDBObject.getString(IMDB_ID);
+            synopsis = TMDBObject.getString("overview");
             backdropURL = TMDB_BACKDROP_URL + Uri.decode(TMDBObject.getString(BACKDROP));
         } catch (JSONException e){
             Log.e("JSON ERROR", this.toString());
@@ -146,7 +147,6 @@ public class Movie implements Parcelable{
             JSONObject scores = RTObject.getJSONObject(RATINGS);
             criticScore = scores.getInt(CRITICS_SCORE);
             audienceScore = scores.getInt(AUDIENCE_SCORE);
-            synopsis = RTObject.getString(SYNOPSIS);
             rating = RTObject.getString(MPAA_RATING);
             runtime = RTObject.getInt(RUNTIME);
             consensus = RTObject.getString(CRITICS_CONSENSUS);
@@ -263,6 +263,10 @@ public class Movie implements Parcelable{
         return backdropURL;
     }
 
+    public String getIMDBid(){
+        return this.IMDBid;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -276,6 +280,7 @@ public class Movie implements Parcelable{
             dest.writeInt(castArray.length);
         }
         dest.writeString(id);
+        dest.writeString(IMDBid);
         dest.writeString(title);
         dest.writeString(year);
         dest.writeString(posterURL);
