@@ -187,7 +187,7 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onPause(){
-
+        super.onPause();
     }
 
     @Override
@@ -224,8 +224,7 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
                 if (db.isMovieRecorded(currentMovie.getId())) {
                     db.updateMovieRecord(currentMovie.getId(), 0, seen, liked);
                 } else {
-                    if (db.createMovieRecord(currentMovie.getId(), currentMovie.getTitle(), currentMovie.getYear(),
-                            currentMovie.getPosterURL(), currentMovie.getThumbURL(), 0, seen, liked) == -1) {
+                    if (db.createMinimalMovieRecord(currentMovie, 0, seen, liked) == -1) {
                         Log.e("SQLite Insert Error", "Error rating movie");
                     }
                     ;
@@ -304,8 +303,7 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
                 Movie movie = new Movie(obj);
 
                 if ((!db.isMovieRecorded(movie.getId()))) {
-                    db.createMovieRecord(movie.getId(), movie.getTitle(), movie.getYear(),
-                            movie.getPosterURL(), movie.getThumbURL(), 1, 0, 0);
+                    db.createMinimalMovieRecord(movie, 1, 0, 0);
                     if (mode == Mode.RECOMMENDED && (!movieList.contains(movie))) {
                         movieList.add(movie);
                     }

@@ -36,38 +36,13 @@ public class MyDB {
         db = dbHelper.getWritableDatabase();
     }
 
-    public long createMovieRecord(String id, String IMDBid, String title, String year, String imageURL, String backdropURL,
-                                  String thumbURL, String synopsis, int criticScore, int audienceScore,
-                                  String rating, int runtime, String cast, String consensus, int similar, int seen, int liked){
+    public long createMinimalMovieRecord(Movie movie, int similar, int seen, int liked){
         ContentValues values = new ContentValues();
-        values.put(MOVIE_ID, id);
-        values.put(IMDB_ID, IMDBid);
-        values.put(MOVIE_TITLE, title);
-        values.put(YEAR, year);
-        values.put(POSTER_URL, imageURL);
-        values.put(BACKDROP_URL, backdropURL);
-        values.put(THUMBNAIL_URL, thumbURL);
-        values.put(SYNOPSIS, synopsis);
-        values.put(CRITICS_SCORE, criticScore);
-        values.put(AUDIENCE_SCORE, audienceScore);
-        values.put(MPAA_RATING, rating);
-        values.put(RUNTIME, runtime);
-        values.put(ACTORS, cast);
-        values.put(CONSENSUS, consensus);
-        values.put(SIMILAR, similar);
-        values.put(SEEN, seen);
-        values.put(LIKED, liked);
-        return db.insertWithOnConflict(MOVIES_TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-    }
-
-    public long createMovieRecord(String id, String title, String year, String imageURL,
-                                  String thumbURL, int similar, int seen, int liked){
-        ContentValues values = new ContentValues();
-        values.put(MOVIE_ID, id);
-        values.put(MOVIE_TITLE, title);
-        values.put(YEAR, year);
-        values.put(POSTER_URL, imageURL);
-        values.put(THUMBNAIL_URL, thumbURL);
+        values.put(MOVIE_ID, movie.getId());
+        values.put(MOVIE_TITLE, movie.getTitle());
+        values.put(YEAR, movie.getYear());
+        values.put(POSTER_URL, movie.getPosterURL());
+        values.put(THUMBNAIL_URL, movie.getThumbURL());
         values.put(SIMILAR, similar);
         values.put(SEEN, seen);
         values.put(LIKED, liked);
