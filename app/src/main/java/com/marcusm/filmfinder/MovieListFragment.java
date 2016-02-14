@@ -2,11 +2,13 @@ package com.marcusm.filmfinder;
 
 import android.app.ListFragment;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 
 import com.marcusm.filmfinder.dummy.DummyContent.DummyItem;
 
@@ -18,19 +20,14 @@ import com.marcusm.filmfinder.dummy.DummyContent.DummyItem;
  */
 public class MovieListFragment extends ListFragment {
 
-    // TODO: Customize parameter argument names
-    private static final String ARG_COLUMN_COUNT = "column-count";
     private static final String HAS_SEEN = "has_seen";
-    // TODO: Customize parameters
-    private int mColumnCount = 1;
+
     OnListFragmentInteractionListener mListener;
 
     MyDB db;
+    CustomCursorAdapter adapter;
     boolean hasSeen;
 
-    public enum Mode {
-        SAVED, SEEN
-    }
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -57,6 +54,9 @@ public class MovieListFragment extends ListFragment {
         }
 
         db = new MyDB(this.getActivity());
+        Cursor mCursor = db.selectMovieRecords(false, hasSeen, "title");
+        adapter = new CustomCursorAdapter(this.getActivity(), mCursor, 0, false);
+        setListAdapter(adapter);
     }
 
     @Override
@@ -64,21 +64,6 @@ public class MovieListFragment extends ListFragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_movie_list, container, false);
 
-        // Set the adapter
-        /*if (view instanceof RecyclerView) {
-            Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
-            if (mColumnCount <= 1) {
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-            }
-            //recyclerView.setAdapter(new MyMovieRecyclerViewAdapter(DummyContent.ITEMS, mListener));
-            Cursor mCursor = db.selectMovieRecords(false, true, "title");
-            recyclerView.setAdapter(new CustomCursorAdapter(this.getActivity(), mCursor, 0, false));
-        }*/
-        Cursor mCursor = db.selectMovieRecords(false, hasSeen, "title");
-        setListAdapter(new CustomCursorAdapter(this.getActivity(), mCursor, 0, false));
         return view;
     }
 
@@ -98,6 +83,18 @@ public class MovieListFragment extends ListFragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id){
+        Intent myIntent = new Intent(getActivity(), MovieActivity.class);
+        Cursor c = adapter.getCursor();
+        c.moveToPosition(position);
+        Movie movie = new Movie(c.getString(0), c.getString(1), c.getString(2), c.getString(3),
+                c.getString(4), c.getString(5), c.getString(6), c.getString(7), c.getInt(8),
+                c.getInt(9), c.getString(10), c.getInt(11), c.getString(12), c.getString(13));
+        myIntent.putExtra("movie", movie);
+        startActivity(myIntent);
     }
 
     /**

@@ -440,15 +440,9 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
     }
 
     Movie getMovieFromCursor(Cursor c) {
-        String cast = c.getString(12);
-        String[] castArray = null;
-        if (cast != null) {
-            castArray = cast.split(",");
-        }
-
         return new Movie(c.getString(0), c.getString(1), c.getString(2), c.getString(3),
                 c.getString(4), c.getString(5), c.getString(6), c.getString(7), c.getInt(8),
-                c.getInt(9), c.getString(10), c.getInt(11), castArray, c.getString(13));
+                c.getInt(9), c.getString(10), c.getInt(11), c.getString(12), c.getString(13));
     }
 
     @Override

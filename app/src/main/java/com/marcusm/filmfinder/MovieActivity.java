@@ -31,7 +31,11 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
 
 
 
-        movie.getMovieDetailsFromJSON();
+        if(movie.getIMDBid() == null){
+            System.out.println("getting movie details");
+            movie.getMovieDetailsFromJSON();
+        }
+
         movieImageView.setImageBitmap(ImageDownloader.loadImage(movie.getBackdropURL()));
         titleView.setText(movie.getTitle());
         criticsScoreView.setText("Critic's Score: " + Integer.toString(movie.getCriticScore()) + "%");

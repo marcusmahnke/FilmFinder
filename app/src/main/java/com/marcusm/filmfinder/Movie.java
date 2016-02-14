@@ -38,7 +38,9 @@ public class Movie implements Parcelable{
     private static final String BACKDROP = "backdrop_path";
 
     String[] castArray;
-    String id, IMDBid, title, year, posterURL, thumbURL, backdropURL, synopsis, rating, consensus;
+    String id, IMDBid, title, year, posterURL, thumbURL, backdropURL, synopsis, rating, consensus,
+    castString;
+
     int criticScore, audienceScore, runtime;
 
     Movie(){
@@ -47,7 +49,7 @@ public class Movie implements Parcelable{
 
     Movie(String id, String IMDBid, String title, String year, String posterURL, String backdropURL,
           String thumbURL, String synopsis, int criticScore, int audienceScore,
-          String rating, int runtime, String[] cast, String consensus){
+          String rating, int runtime, String cast, String consensus){
 
         initMovie(id, IMDBid, title, year, posterURL, backdropURL, thumbURL, synopsis,
                 criticScore, audienceScore, rating, runtime, cast, consensus);
@@ -68,23 +70,23 @@ public class Movie implements Parcelable{
     }
 
     Movie(Parcel in){
-        String[] cast;
+        /*String[] cast;
         int arrayLength = in.readInt();
         if(arrayLength != 0) {
             cast = new String[in.readInt()];
             in.readStringArray(cast);
         } else {
             cast = null;
-        }
+        }*/
 
         initMovie(in.readString(), in.readString(), in.readString(), in.readString(), in.readString(), in.readString(),
                 in.readString(), in.readString(), in.readInt(), in.readInt(), in.readString(), in.readInt(),
-                cast, in.readString());
+                in.readString(), in.readString());
     }
 
     void initMovie(String id, String IMDBid, String title, String year, String posterURL, String backdropURL, String thumbURL,
                    String synopsis, int criticScore, int audienceScore,
-                   String rating, int runtime, String[] cast, String consensus){
+                   String rating, int runtime, String cast, String consensus){
         this.id = id;
         this.IMDBid = IMDBid;
         this.title = title;
@@ -97,7 +99,10 @@ public class Movie implements Parcelable{
         this.criticScore = criticScore;
         this.rating = rating;
         this.runtime = runtime;
-        this.castArray = cast;
+        this.castString = cast;
+        if(cast != null) {
+            this.castArray = cast.split(",");
+        }
         this.consensus = consensus;
     }
 
@@ -120,7 +125,7 @@ public class Movie implements Parcelable{
         return id + ": " + title + " (" + year + ")";
     }
 
-    public String getCastString() {
+    public String castArrayToString() {
         StringBuilder sb = new StringBuilder(120);
         if(castArray!=null){
             for(int i=0; i<castArray.length; i++){
@@ -142,6 +147,8 @@ public class Movie implements Parcelable{
             Log.e("JSON ERROR", this.toString());
         }
 
+        System.out.println(RT_MOVIE_URL + IMDBid.substring(2));
+
         JSONObject RTObject = WebRequest.APICall(RT_MOVIE_URL + IMDBid.substring(2));
         try {
             JSONObject scores = RTObject.getJSONObject(RATINGS);
@@ -152,15 +159,27 @@ public class Movie implements Parcelable{
             consensus = RTObject.getString(CRITICS_CONSENSUS);
 
             JSONArray abridged_cast = RTObject.getJSONArray(CAST);
-            castArray = new String[abridged_cast.length()];
-            for (int i = 0; i < abridged_cast.length(); i++) {
+            int length = abridged_cast.length();
+            StringBuilder sb = new StringBuilder(120);
+            castArray = new String[length];
+            for (int i = 0; i < length; i++) {
                 JSONObject actor = abridged_cast.getJSONObject(i);
-                castArray[i] = actor.getString(ACTOR_NAME);
+                String actorString = actor.getString(ACTOR_NAME);
+                castArray[i] = actorString;
+                sb.append(actorString);
+                if(i != length-1){
+                    sb.append(", ");
+                }
             }
+            castString = sb.toString();
 
         } catch (JSONException e) {
             Log.e("JSON ERROR", this.toString());
         }
+    }
+
+    public String getCastString(){
+        return castString;
     }
 
     public String[] getCastArray() {
@@ -274,11 +293,11 @@ public class Movie implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        if(castArray==null){
-            dest.writeInt(0);
-        } else {
-            dest.writeInt(castArray.length);
-        }
+        //if(castArray==null){
+        //    dest.writeInt(0);
+        //} else {
+        //    dest.writeInt(castArray.length);
+       // }
         dest.writeString(id);
         dest.writeString(IMDBid);
         dest.writeString(title);
@@ -290,7 +309,7 @@ public class Movie implements Parcelable{
         dest.writeInt(criticScore);
         dest.writeString(rating);
         dest.writeInt(runtime);
-        dest.writeStringArray(castArray);
+        dest.writeString(getCastString());
         dest.writeString(consensus);
 
     }
