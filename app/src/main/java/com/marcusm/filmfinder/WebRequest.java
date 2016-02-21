@@ -91,6 +91,8 @@ public class WebRequest extends AsyncTask<Void, Void, String> {
             obj = new JSONObject(JSONString);
         } catch (JSONException e) {
             return null;
+        } catch (NullPointerException e){
+            return null;
         }
 
         return obj;

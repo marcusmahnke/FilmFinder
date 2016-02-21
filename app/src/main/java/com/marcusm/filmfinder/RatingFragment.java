@@ -128,7 +128,7 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
         saveButton.setOnClickListener(this);
 
         if (mode == Mode.ALL) {
-            findMovies();
+            findMovie();
         } else {
             loadSimilarMovies();
         }
@@ -148,7 +148,7 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
 
             @Override
             public boolean onQueryTextSubmit(String query) {
-                findMovies(query);
+                findMovie(query);
                 changeMovie();
                 return false;
             }
@@ -237,23 +237,27 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-    boolean findMovies(String searchQuery) {
+    boolean findMovie(String searchQuery) {
         JSONObject TMDBObject = WebRequest.APICall(TMDB_ROOT_URL + SEARCH_REQ + Uri.encode(searchQuery) + AMPERSAND
                 + API_KEY);
 
-        try {
-            JSONArray TMDBArray = TMDBObject.getJSONArray(RESULTS_ARRAY);
-            TMDBObject = TMDBArray.getJSONObject(0);
-            currentMovie = new Movie(TMDBObject);
-        } catch (JSONException e) {
+        if(TMDBObject!=null) {
+            try {
+                JSONArray TMDBArray = TMDBObject.getJSONArray(RESULTS_ARRAY);
+                TMDBObject = TMDBArray.getJSONObject(0);
+                currentMovie = new Movie(TMDBObject);
+            } catch (JSONException e) {
+                return false;
+            }
+            movieList.add(0, currentMovie);
+            return true;
+        } else {
             return false;
         }
-        movieList.add(0, currentMovie);
 
-        return true;
     }
 
-    boolean findMovies() {
+    boolean findMovie() {
         StringBuilder call = new StringBuilder();
         call.append(TMDB_ROOT_URL + POPULAR_MOVIES_REQ + AMPERSAND + PAGE + moviesPage);
 
@@ -274,46 +278,54 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
         call.append(AMPERSAND + API_KEY);
 
         JSONObject obj = WebRequest.APICall(call.toString());
-        try {
-            JSONArray arr = obj.getJSONArray(RESULTS_ARRAY);
-            for (int i = 0; i < arr.length(); i++) {
-                obj = arr.getJSONObject(i);
-                Movie movie = new Movie(obj);
-                if ((!db.isMovieRecorded(movie.getId())) && (!movieList.contains(movie))) {
-                    movieList.add(movie);
+        if(obj!=null) {
+            try {
+                JSONArray arr = obj.getJSONArray(RESULTS_ARRAY);
+                for (int i = 0; i < arr.length(); i++) {
+                    obj = arr.getJSONObject(i);
+                    Movie movie = new Movie(obj);
+                    if ((!db.isMovieRecorded(movie.getId())) && (!movieList.contains(movie))) {
+                        movieList.add(movie);
+                    }
                 }
+            } catch (JSONException e) {
+                return false;
             }
-        } catch (JSONException e) {
+
+            return true;
+        } else {
             return false;
         }
-
-        return true;
     }
 
     boolean findSimilarMovies() {
         JSONObject obj = WebRequest.APICall(TMDB_ROOT_URL + MOVIE_LOOKUP + currentMovie.getId() + SIMILAR_LOOKUP + API_KEY);
-        try {
-            JSONArray arr = obj.getJSONArray(RESULTS_ARRAY);
-            int numMovies = arr.length();
-            if (numMovies > NUM_SIMILAR_MOVIES) {
-                numMovies = NUM_SIMILAR_MOVIES;
-            }
-            for (int i = 0; i < numMovies; i++) {
-                obj = arr.getJSONObject(i);
-                Movie movie = new Movie(obj);
+        if(obj!=null) {
+            try {
+                JSONArray arr = obj.getJSONArray(RESULTS_ARRAY);
+                int numMovies = arr.length();
+                if (numMovies > NUM_SIMILAR_MOVIES) {
+                    numMovies = NUM_SIMILAR_MOVIES;
+                }
+                for (int i = 0; i < numMovies; i++) {
+                    obj = arr.getJSONObject(i);
+                    Movie movie = new Movie(obj);
 
-                if ((!db.isMovieRecorded(movie.getId()))) {
-                    db.createMinimalMovieRecord(movie, 1, 0, 0);
-                    if (mode == Mode.RECOMMENDED && (!movieList.contains(movie))) {
-                        movieList.add(movie);
+                    if ((!db.isMovieRecorded(movie.getId()))) {
+                        db.createMinimalMovieRecord(movie, 1, 0, 0);
+                        if (mode == Mode.RECOMMENDED && (!movieList.contains(movie))) {
+                            movieList.add(movie);
+                        }
                     }
                 }
+            } catch (JSONException e) {
+                return false;
             }
-        } catch (JSONException e) {
+
+            return true;
+        } else{
             return false;
         }
-
-        return true;
     }
 
     void changeMovie() {
@@ -326,7 +338,7 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
             movieImageView.setImageBitmap(image);
         } else if (mode == Mode.ALL) {
             moviesPage++;
-            if (findMovies()) {
+            if (findMovie()) {
                 changeMovie();
             } else {
                 clearMovie("Error. No Movies Found!");
@@ -431,7 +443,7 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
         if (mode == Mode.ALL) {
             movieList.clear();
             moviesPage = 1;
-            findMovies();
+            findMovie();
             changeMovie();
         } else {
             loadSimilarMovies();
