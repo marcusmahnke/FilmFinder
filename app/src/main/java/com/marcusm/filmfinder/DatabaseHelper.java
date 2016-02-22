@@ -27,13 +27,26 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             "runtime integer," +
             "actors text," +
             "consensus text," +
+            "genre_1 integer," +
+            "genre_2 integer," +
+            "genre_3 integer," +
+            "genre_4 integer," +
             "similar integer not null," +
             "seen integer not null," +
             "liked integer not null);";
 
+    private static DatabaseHelper instance;
+
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         // TODO Auto-generated constructor stub
+    }
+
+    public static synchronized DatabaseHelper getHelper(Context context){
+        if(instance==null){
+            instance = new DatabaseHelper(context);
+        }
+        return instance;
     }
 
     @Override

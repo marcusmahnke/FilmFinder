@@ -36,23 +36,24 @@ public class Movie implements Parcelable{
     private static final String POSTER = "poster_path";
     private static final String RELEASE_DATE = "release_date";
     private static final String BACKDROP = "backdrop_path";
+    private static final String GENRE_IDS = "genre_ids";
 
-    String[] castArray;
-    String id, IMDBid, title, year, posterURL, thumbURL, backdropURL, synopsis, rating, consensus,
-    castString;
-
-    int criticScore, audienceScore, runtime;
+    private String[] castArray;
+    private String id, IMDBid, title, year, posterURL, thumbURL, backdropURL, synopsis, rating, consensus,
+    castString, genreIDs;
+    private int[] genreIDsArray;
+    private int criticScore, audienceScore, runtime;
 
     Movie(){
-        initMovie("","","","","","","","", -1, -1, "", -1, null, "");
+        initMovie("","","","","","","","", -1, -1, "", -1, null, "", "");
     }
 
     Movie(String id, String IMDBid, String title, String year, String posterURL, String backdropURL,
           String thumbURL, String synopsis, int criticScore, int audienceScore,
-          String rating, int runtime, String cast, String consensus){
+          String rating, int runtime, String cast, String consensus, String genreIDs){
 
         initMovie(id, IMDBid, title, year, posterURL, backdropURL, thumbURL, synopsis,
-                criticScore, audienceScore, rating, runtime, cast, consensus);
+                criticScore, audienceScore, rating, runtime, cast, consensus, genreIDs);
     }
 
     Movie(JSONObject obj) {
@@ -64,29 +65,36 @@ public class Movie implements Parcelable{
             thumbURL = TMDB_THUMBNAIL_URL + imageURL;
             year = obj.getString(RELEASE_DATE).substring(0, 4);
 
+
+            JSONArray arr = obj.getJSONArray(GENRE_IDS);
+            if(arr != null) {
+                StringBuilder sb = new StringBuilder();
+                int length = arr.length();
+                genreIDsArray = new int[length];
+                for (int i = 0; i < length; i++) {
+                    genreIDsArray[i] = arr.getInt(i);
+                    sb.append(Integer.toString(genreIDsArray[i]));
+                    if(i != length - 1){
+                        sb.append(",");
+                    }
+                }
+                genreIDs = sb.toString();
+            }
+
         } catch (JSONException e) {
             Log.e("JSON ERROR", this.toString());
         }
     }
 
-    Movie(Parcel in){
-        /*String[] cast;
-        int arrayLength = in.readInt();
-        if(arrayLength != 0) {
-            cast = new String[in.readInt()];
-            in.readStringArray(cast);
-        } else {
-            cast = null;
-        }*/
-
+    Movie(Parcel in) {
         initMovie(in.readString(), in.readString(), in.readString(), in.readString(), in.readString(), in.readString(),
                 in.readString(), in.readString(), in.readInt(), in.readInt(), in.readString(), in.readInt(),
-                in.readString(), in.readString());
+                in.readString(), in.readString(), in.readString());
     }
 
     void initMovie(String id, String IMDBid, String title, String year, String posterURL, String backdropURL, String thumbURL,
                    String synopsis, int criticScore, int audienceScore,
-                   String rating, int runtime, String cast, String consensus){
+                   String rating, int runtime, String cast, String consensus, String genreIDs){
         this.id = id;
         this.IMDBid = IMDBid;
         this.title = title;
@@ -104,6 +112,7 @@ public class Movie implements Parcelable{
             this.castArray = cast.split(",");
         }
         this.consensus = consensus;
+        this.genreIDs = genreIDs;
     }
 
     @Override
@@ -180,6 +189,15 @@ public class Movie implements Parcelable{
 
     public String getCastString(){
         return castString;
+    }
+
+    public boolean isGenre (int genre){
+        for(int i = 0; i < genreIDsArray.length; i++){
+            if(genre == genreIDsArray[i]){
+                return true;
+            }
+        }
+        return false;
     }
 
     public String[] getCastArray() {
@@ -286,6 +304,8 @@ public class Movie implements Parcelable{
         return this.IMDBid;
     }
 
+    public int[] getGenreIDsArray(){ return genreIDsArray; }
+
     @Override
     public int describeContents() {
         return 0;
@@ -293,25 +313,21 @@ public class Movie implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        //if(castArray==null){
-        //    dest.writeInt(0);
-        //} else {
-        //    dest.writeInt(castArray.length);
-       // }
         dest.writeString(id);
         dest.writeString(IMDBid);
         dest.writeString(title);
         dest.writeString(year);
         dest.writeString(posterURL);
+        dest.writeString(backdropURL);
         dest.writeString(thumbURL);
         dest.writeString(synopsis);
-        dest.writeInt(audienceScore);
         dest.writeInt(criticScore);
+        dest.writeInt(audienceScore);
         dest.writeString(rating);
         dest.writeInt(runtime);
         dest.writeString(getCastString());
         dest.writeString(consensus);
-
+        dest.writeString(genreIDs);
     }
 
     public static final Parcelable.Creator<Movie> CREATOR= new Parcelable.Creator<Movie>() {

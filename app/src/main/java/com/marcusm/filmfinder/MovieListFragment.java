@@ -67,6 +67,15 @@ public class MovieListFragment extends ListFragment {
         return view;
     }
 
+    @Override
+    public void onResume(){
+        super.onResume();
+        Cursor mCursor = db.selectMovieRecords(false, hasSeen, "title");
+        adapter.changeCursor(mCursor);
+
+        adapter.notifyDataSetChanged();
+    }
+
 
     @Override
     public void onAttach(Context context) {
@@ -92,7 +101,7 @@ public class MovieListFragment extends ListFragment {
         c.moveToPosition(position);
         Movie movie = new Movie(c.getString(0), c.getString(1), c.getString(2), c.getString(3),
                 c.getString(4), c.getString(5), c.getString(6), c.getString(7), c.getInt(8),
-                c.getInt(9), c.getString(10), c.getInt(11), c.getString(12), c.getString(13));
+                c.getInt(9), c.getString(10), c.getInt(11), c.getString(12), c.getString(13), c.getString(14));
         myIntent.putExtra("movie", movie);
         startActivity(myIntent);
     }

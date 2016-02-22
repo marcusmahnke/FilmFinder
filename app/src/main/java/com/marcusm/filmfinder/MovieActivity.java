@@ -14,11 +14,13 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
     public static final String SEEN = "seen";
     public static final String LIKED = "liked";
     Movie movie;
+    MyDB db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie);
+        db = new MyDB(this);
 
         TextView titleView = (TextView) this.findViewById(R.id.movie_title);
         TextView criticsScoreView = (TextView) this.findViewById(R.id.movie_critics_score);
@@ -34,6 +36,7 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         if(movie.getIMDBid() == null){
             System.out.println("getting movie details");
             movie.getMovieDetailsFromJSON();
+            db.updateMovieRecord(movie);
         }
 
         movieImageView.setImageBitmap(ImageDownloader.loadImage(movie.getBackdropURL()));

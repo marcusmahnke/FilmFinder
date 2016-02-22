@@ -128,7 +128,7 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
         saveButton.setOnClickListener(this);
 
         if (mode == Mode.ALL) {
-            findMovie();
+            findMovies();
         } else {
             loadSimilarMovies();
         }
@@ -229,6 +229,7 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
                     }
                     ;
                 }
+                movieList.remove(0);
                 changeMovie();
             } else {
                 Toast toast = Toast.makeText(this.getActivity().getApplicationContext(), "No movie to rate!", Toast.LENGTH_SHORT);
@@ -257,7 +258,7 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
 
     }
 
-    boolean findMovie() {
+    boolean findMovies() {
         StringBuilder call = new StringBuilder();
         call.append(TMDB_ROOT_URL + POPULAR_MOVIES_REQ + AMPERSAND + PAGE + moviesPage);
 
@@ -277,6 +278,7 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
 
         call.append(AMPERSAND + API_KEY);
 
+        //System.out.println(call.toString());
         JSONObject obj = WebRequest.APICall(call.toString());
         if(obj!=null) {
             try {
@@ -314,7 +316,18 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
                     if ((!db.isMovieRecorded(movie.getId()))) {
                         db.createMinimalMovieRecord(movie, 1, 0, 0);
                         if (mode == Mode.RECOMMENDED && (!movieList.contains(movie))) {
-                            movieList.add(movie);
+                            if(filterByGenre){
+                                if(movie.isGenre(genreFilter)) {
+                                    movieList.add(movie);
+                                }
+                            } else if(filterByYear){
+                                if(Integer.decode(movie.getYear()) == yearFilter){
+                                    movieList.add(movie);
+                                }
+                            }
+                            else{
+                                movieList.add(movie);
+                            }
                         }
                     }
                 }
@@ -330,7 +343,6 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
 
     void changeMovie() {
         if (movieList.size() > 0) {
-            movieList.remove(0);
             currentMovie = movieList.get(0);
             Bitmap image = ImageDownloader.loadImage(currentMovie.getPosterURL());
             String s = currentMovie.getTitle() + " (" + currentMovie.getYear() + ")";
@@ -338,13 +350,19 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
             movieImageView.setImageBitmap(image);
         } else if (mode == Mode.ALL) {
             moviesPage++;
-            if (findMovie()) {
+            if (findMovies()) {
                 changeMovie();
             } else {
                 clearMovie("Error. No Movies Found!");
             }
         } else {
-            clearMovie("No Movies Found! Rate more movies for more recommendations!");
+            String message;
+            if(filterByYear || filterByGenre){
+                message = "No Movies Found! Change Filter Settings to find more recommendations!";
+            } else {
+                message = "No Movies Found! Rate more movies for more recommendations!";
+            }
+            clearMovie(message);
         }
     }
 
@@ -356,8 +374,24 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
 
     void loadSimilarMovies() {
         movieList.clear();
-        filterView.setText("Showing: Movies Recommended for You");
-        Cursor mCursor = db.selectMovieRecords(true, false, null);
+
+        Cursor mCursor;
+        int genre = -1;
+        int year = -1;
+        StringBuilder sb = new StringBuilder();
+        sb.append("Showing: ");
+        if(filterByGenre){
+            sb.append(genreLabel);
+            genre = genreFilter;
+        }
+        sb.append(" Movies Recommended for You ");
+        if(filterByYear){
+            sb.append("From " + yearFilter);
+            year = yearFilter;
+        }
+        filterView.setText(sb.toString());
+        mCursor = db.selectMovieRecords(true, false, year, genre, null);
+
         for (int i = 0; i < mCursor.getCount(); i++) {
             movieList.add(getMovieFromCursor(mCursor));
             mCursor.moveToNext();
@@ -443,7 +477,7 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
         if (mode == Mode.ALL) {
             movieList.clear();
             moviesPage = 1;
-            findMovie();
+            findMovies();
             changeMovie();
         } else {
             loadSimilarMovies();
@@ -454,7 +488,7 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
     Movie getMovieFromCursor(Cursor c) {
         return new Movie(c.getString(0), c.getString(1), c.getString(2), c.getString(3),
                 c.getString(4), c.getString(5), c.getString(6), c.getString(7), c.getInt(8),
-                c.getInt(9), c.getString(10), c.getInt(11), c.getString(12), c.getString(13));
+                c.getInt(9), c.getString(10), c.getInt(11), c.getString(12), c.getString(13), c.getString(14));
     }
 
     @Override
@@ -480,6 +514,7 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
             } else{
                 db.createDetailedMovieRecord(currentMovie, 0, seen, liked);
             }
+            movieList.remove(0);
             changeMovie();
         }
     }
