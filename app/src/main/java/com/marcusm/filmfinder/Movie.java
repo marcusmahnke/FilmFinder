@@ -14,22 +14,22 @@ import org.json.JSONObject;
  */
 public class Movie implements Parcelable{
 
-    private static final String RT_MOVIE_URL = "http://api.rottentomatoes.com/api/public/v1.0/movie_alias.json?apikey=##&type=imdb&id=";
-    private static final String RATINGS = "ratings";
-    private static final String CRITICS_SCORE = "critics_score";
-    private static final String CRITICS_CONSENSUS = "critics_consensus";
-    private static final String AUDIENCE_SCORE = "audience_score";
-    private static final String CAST = "abridged_cast";
-    private static final String ACTOR_NAME = "name";
-    private static final String SYNOPSIS = "synopsis";
-    private static final String MPAA_RATING = "mpaa_rating";
-    private static final String RUNTIME = "runtime";
-
     private static final String TMDB_API_KEY = "api_key=##";
+//    private static final String RT_MOVIE_URL = "http://api.rottentomatoes.com/api/public/v1.0/movie_alias.json?apikey=##&type=imdb&id=";
+//    private static final String RATINGS = "ratings";
+//    private static final String CRITICS_SCORE = "critics_score";
+//    private static final String CRITICS_CONSENSUS = "critics_consensus";
+//    private static final String AUDIENCE_SCORE = "audience_score";
+//    private static final String CAST = "abridged_cast";
+//    private static final String ACTOR_NAME = "name";
+//    private static final String SYNOPSIS = "synopsis";
+//    private static final String MPAA_RATING = "mpaa_rating";
+//    private static final String RUNTIME = "runtime";
+
     private static final String TMDB_MOVIE_URL = "https://api.themoviedb.org/3/movie/";
     private static final String TMDB_POSTER_URL = "https://image.tmdb.org/t/p/w780";
     private static final String TMDB_BACKDROP_URL = "https://image.tmdb.org/t/p/w1280";
-    private static final String TMDB_THUMBNAIL_URL = "https://image.tmdb.org/t/p/w92";
+    private static final String TMDB_THUMBNAIL_URL = "https://image.tmdb.org/t/p/w342";
     private static final String MOVIE_ID = "id";
     private static final String IMDB_ID = "imdb_id";
     private static final String TITLE = "title";
@@ -156,35 +156,35 @@ public class Movie implements Parcelable{
             Log.e("JSON ERROR", this.toString());
         }
 
-        System.out.println(RT_MOVIE_URL + IMDBid.substring(2));
-
-        JSONObject RTObject = WebRequest.APICall(RT_MOVIE_URL + IMDBid.substring(2));
-        try {
-            JSONObject scores = RTObject.getJSONObject(RATINGS);
-            criticScore = scores.getInt(CRITICS_SCORE);
-            audienceScore = scores.getInt(AUDIENCE_SCORE);
-            rating = RTObject.getString(MPAA_RATING);
-            runtime = RTObject.getInt(RUNTIME);
-            consensus = RTObject.getString(CRITICS_CONSENSUS);
-
-            JSONArray abridged_cast = RTObject.getJSONArray(CAST);
-            int length = abridged_cast.length();
-            StringBuilder sb = new StringBuilder(120);
-            castArray = new String[length];
-            for (int i = 0; i < length; i++) {
-                JSONObject actor = abridged_cast.getJSONObject(i);
-                String actorString = actor.getString(ACTOR_NAME);
-                castArray[i] = actorString;
-                sb.append(actorString);
-                if(i != length-1){
-                    sb.append(", ");
-                }
-            }
-            castString = sb.toString();
-
-        } catch (JSONException e) {
-            Log.e("JSON ERROR", this.toString());
-        }
+//        System.out.println(RT_MOVIE_URL + IMDBid.substring(2));
+//
+//        JSONObject RTObject = WebRequest.APICall(RT_MOVIE_URL + IMDBid.substring(2));
+//        try {
+//            JSONObject scores = RTObject.getJSONObject(RATINGS);
+//            criticScore = scores.getInt(CRITICS_SCORE);
+//            audienceScore = scores.getInt(AUDIENCE_SCORE);
+//            rating = RTObject.getString(MPAA_RATING);
+//            runtime = RTObject.getInt(RUNTIME);
+//            consensus = RTObject.getString(CRITICS_CONSENSUS);
+//
+//            JSONArray abridged_cast = RTObject.getJSONArray(CAST);
+//            int length = abridged_cast.length();
+//            StringBuilder sb = new StringBuilder(120);
+//            castArray = new String[length];
+//            for (int i = 0; i < length; i++) {
+//                JSONObject actor = abridged_cast.getJSONObject(i);
+//                String actorString = actor.getString(ACTOR_NAME);
+//                castArray[i] = actorString;
+//                sb.append(actorString);
+//                if(i != length-1){
+//                    sb.append(", ");
+//                }
+//            }
+//            castString = sb.toString();
+//
+//        } catch (JSONException e) {
+//            Log.e("JSON ERROR", this.toString());
+//        }
     }
 
     public String getCastString(){

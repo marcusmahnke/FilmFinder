@@ -30,6 +30,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.yuyakaido.android.cardstackview.CardStackView;
+import com.yuyakaido.android.cardstackview.SwipeDirection;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,8 +67,11 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
     private static final String RECOMMENDED = "recommended";
 
     private static final int MOVIE_ACTIVITY_RESULT = 1;
+
+    private CardStackView movieStackView;
+
     MyDB db;
-    ImageView movieImageView;
+    //ImageView movieImageView;
     TextView titleView, filterView;
     ArrayList<Movie> movieList;
     Movie currentMovie;
@@ -112,20 +118,70 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_rating, container, false);
-        movieImageView = (ImageView) rootView.findViewById(R.id.movie_image);
-        movieImageView.setOnClickListener(this);
+        //movieImageView = (ImageView) rootView.findViewById(R.id.movie_image);
+        //movieImageView.setOnClickListener(this);
         titleView = (TextView) rootView.findViewById(R.id.movie_title);
         filterView = (TextView) rootView.findViewById(R.id.filter);
         filterView.setOnClickListener(this);
 
-        Button likeButton = (Button) rootView.findViewById(R.id.like_button);
-        likeButton.setOnClickListener(this);
-        Button dislikeButton = (Button) rootView.findViewById(R.id.dislike_button);
-        dislikeButton.setOnClickListener(this);
-        Button skipButton = (Button) rootView.findViewById(R.id.skip_button);
-        skipButton.setOnClickListener(this);
-        Button saveButton = (Button) rootView.findViewById(R.id.save_button);
-        saveButton.setOnClickListener(this);
+//        Button likeButton = (Button) rootView.findViewById(R.id.like_button);
+//        likeButton.setOnClickListener(this);
+//        Button dislikeButton = (Button) rootView.findViewById(R.id.dislike_button);
+//        dislikeButton.setOnClickListener(this);
+//        Button skipButton = (Button) rootView.findViewById(R.id.skip_button);
+//        skipButton.setOnClickListener(this);
+//        Button saveButton = (Button) rootView.findViewById(R.id.save_button);
+//        saveButton.setOnClickListener(this);
+
+        movieStackView = (CardStackView) rootView.findViewById(R.id.movie_stack_view);
+        movieStackView.setCardEventListener(new CardStackView.CardEventListener() {
+            @Override
+            public void onCardDragging(float percentX, float percentY) {
+
+            }
+
+            @Override
+            public void onCardSwiped(SwipeDirection direction) {
+                int liked = 0;
+                int seen = 0;
+
+                if (direction == SwipeDirection.Right) {
+                    findSimilarMovies();
+                    liked = 1;
+                    seen = 1;
+                } else if (direction == SwipeDirection.Left) {
+                    seen = 1;
+                } else if (direction == SwipeDirection.Bottom) {
+                    seen = 2;
+                }
+
+                if (db.isMovieRecorded(currentMovie.getId())) {
+                    db.updateMovieRecord(currentMovie.getId(), 0, seen, liked);
+                } else {
+                    if (db.createMinimalMovieRecord(currentMovie, 0, seen, liked) == -1) {
+                        Log.e("SQLite Insert Error", "Error rating movie");
+                    }
+                }
+
+                movieList.remove(0);
+                changeMovie();
+            }
+
+            @Override
+            public void onCardReversed() {
+
+            }
+
+            @Override
+            public void onCardMovedToOrigin() {
+
+            }
+
+            @Override
+            public void onCardClicked(int index) {
+
+            }
+        });
 
         if (mode == Mode.ALL) {
             findMovies();
@@ -133,6 +189,10 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
             loadSimilarMovies();
         }
         changeMovie();
+
+        MovieCardAdapter adapter = new MovieCardAdapter(getContext());
+        adapter.addAll(movieList);
+        movieStackView.setAdapter(adapter);
 
         // Inflate the layout for this fragment
         return rootView;
@@ -199,43 +259,44 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
             startActivityForResult(myIntent, MOVIE_ACTIVITY_RESULT);
         } else if (id == R.id.filter) {
             showFilterPopup(filterView);
-        } else {
-            if (currentMovie != null) {
-
-                //update db
-                int liked = 0;
-                int seen = 0;
-                switch (id) {
-                    case R.id.like_button:
-                        findSimilarMovies();
-                        liked = 1;
-                        seen = 1;
-                        break;
-                    case R.id.dislike_button:
-                        seen = 1;
-                        break;
-                    case R.id.save_button:
-                        break;
-                    case R.id.skip_button:
-                        seen = 2;
-                        break;
-                }
-
-                if (db.isMovieRecorded(currentMovie.getId())) {
-                    db.updateMovieRecord(currentMovie.getId(), 0, seen, liked);
-                } else {
-                    if (db.createMinimalMovieRecord(currentMovie, 0, seen, liked) == -1) {
-                        Log.e("SQLite Insert Error", "Error rating movie");
-                    }
-                    ;
-                }
-                movieList.remove(0);
-                changeMovie();
-            } else {
-                Toast toast = Toast.makeText(this.getActivity().getApplicationContext(), "No movie to rate!", Toast.LENGTH_SHORT);
-                toast.show();
-            }
         }
+//        else {
+//            if (currentMovie != null) {
+//
+//                //update db
+//                int liked = 0;
+//                int seen = 0;
+//                switch (id) {
+//                    case R.id.like_button:
+//                        findSimilarMovies();
+//                        liked = 1;
+//                        seen = 1;
+//                        break;
+//                    case R.id.dislike_button:
+//                        seen = 1;
+//                        break;
+//                    case R.id.save_button:
+//                        break;
+//                    case R.id.skip_button:
+//                        seen = 2;
+//                        break;
+//                }
+//
+//                if (db.isMovieRecorded(currentMovie.getId())) {
+//                    db.updateMovieRecord(currentMovie.getId(), 0, seen, liked);
+//                } else {
+//                    if (db.createMinimalMovieRecord(currentMovie, 0, seen, liked) == -1) {
+//                        Log.e("SQLite Insert Error", "Error rating movie");
+//                    }
+//                    ;
+//                }
+//                movieList.remove(0);
+//                changeMovie();
+//            } else {
+//                Toast toast = Toast.makeText(this.getActivity().getApplicationContext(), "No movie to rate!", Toast.LENGTH_SHORT);
+//                toast.show();
+//            }
+//        }
     }
 
     boolean findMovie(String searchQuery) {
@@ -347,7 +408,7 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
             Bitmap image = ImageDownloader.loadImage(currentMovie.getPosterURL());
             String s = currentMovie.getTitle() + " (" + currentMovie.getYear() + ")";
             titleView.setText(s);
-            movieImageView.setImageBitmap(image);
+            //movieImageView.setImageBitmap(image);
         } else if (mode == Mode.ALL) {
             moviesPage++;
             if (findMovies()) {
@@ -368,7 +429,7 @@ public class RatingFragment extends Fragment implements View.OnClickListener {
 
     void clearMovie(String s) {
         currentMovie = null;
-        movieImageView.setImageBitmap(null);
+        //movieImageView.setImageBitmap(null);
         titleView.setText(s);
     }
 

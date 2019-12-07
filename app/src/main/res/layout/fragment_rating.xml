@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.marcusm.filmfinder.RatingFragment">
 
     <LinearLayout
@@ -20,47 +21,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
-        <ImageView
-            android:id="@+id/movie_image"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:adjustViewBounds="true"
-            android:layout_weight="1"/>
+        <!--<ImageView-->
+            <!--android:id="@+id/movie_image"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="0dp"-->
+            <!--android:adjustViewBounds="true"-->
+            <!--android:layout_weight="1"/>-->
 
-        <LinearLayout
+        <com.yuyakaido.android.cardstackview.CardStackView
+            android:id="@+id/movie_stack_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/dislike_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/dislike_button" />
-
-            <Button
-                android:id="@+id/skip_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/skip_button" />
-
-            <Button
-                android:id="@+id/save_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/save_button" />
-
-            <Button
-                android:id="@+id/like_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/like_button" />
-
-        </LinearLayout>
+            app:elevationEnabled="false"/>
 
     </LinearLayout>
 

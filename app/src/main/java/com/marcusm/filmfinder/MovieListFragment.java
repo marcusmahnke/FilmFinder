@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.support.v4.widget.ListViewCompat;
 
 import com.marcusm.filmfinder.dummy.DummyContent.DummyItem;
 

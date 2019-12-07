@@ -99,7 +99,8 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_slideshow) {
             changeFragment(MovieListFragment.newInstance(false));
         } else if (id == R.id.nav_manage) {
-            changeFragment(MovieListFragment.newInstance(true));
+            //changeFragment(MovieListFragment.newInstance(true));
+            changeFragment(MovieListActivity.newInstance());
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_send) {
